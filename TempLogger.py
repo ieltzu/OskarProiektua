@@ -12,9 +12,10 @@ import json, random, time
 # In this example we are using OAuth and Google APIs
 # to create a spreadsheet in Google Drive prepopulated with 10 temperature samples
 #
-# Temperature data comes from a LM35 sensor that is connected to an Arduino board.
+# Temperature data comes fasdfasdfasdfrom a LM35 sensor that is connected to an Arduino board.
 # The Arduino board is connected to this script using a Serial communication
 ##################################################################################
+
 def makeRequest(url, method = 'GET', body='', headers={}):
     partes = url.split('/')
     conn = None
