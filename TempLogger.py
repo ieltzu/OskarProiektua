@@ -2,7 +2,7 @@
 import httplib
 import urllib
 import webbrowser
-import json
+import json, random, time
 #import serial
 
 
@@ -45,7 +45,7 @@ print('#####################################')
 temperature = ''
 while True:
     #temperature = float(com_port.readline())
-    temperature = 25.3
+    temperature = random.random() * 40
     print str(temperature)
     response, edukia = makeRequest(url='http://data.sparkfun.com/input/dZaoR0p6pasmppMl5KRd',method='POST',body="temp="+str(temperature),headers={
         'Phant-Private-Key': 'eEwYG2aKawfW55ow8Gp7',
@@ -54,5 +54,6 @@ while True:
     print response.status
     print response.getheader('Location')
     print edukia
+    time.sleep(5)
 
 
