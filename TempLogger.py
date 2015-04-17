@@ -15,6 +15,7 @@ import json
 # Temperature data comes fasdfasdfasdfrom a LM35 sensor that is connected to an Arduino board.
 # The Arduino board is connected to this script using a Serial communication
 ##################################################################################
+
 def makeRequest(url, method = 'GET', body='', headers={}):
     partes = url.split('/')
     conn = None
@@ -53,6 +54,6 @@ while True:
         })
     print response.status
     print response.getheader('Location')
-    print edukia
+    #print edukia
 
 
