@@ -47,17 +47,54 @@ chart.draw(data, options);
 setInterval(function() {
   data.setValue(0, 1, temperatura);
   chart.draw(data, options);
-}, 500);
+    drawLineChart();
+}, 5000);
 }
 
+google.load('visualization', '1', {packages: ['corechart', 'line']});
+
+
+function drawLineChart() {
+    var arr = []
+    for (el in data2){
+        var instance = data2.pop();
+        arr.push([parseFloat(el), parseFloat(instance.temp)]);
+    }
+    var data = new google.visualization.DataTable();
+    data.addColumn('number', 'X');
+    data.addColumn('number', 'Temp');
+    data.addRows(arr);
+    var options = {
+        title: 'UPV Weather',
+        curveType: 'none',
+        legend: { position: 'bottom' },
+        hAxis: {
+          title: 'Time'
+        },
+        vAxis: {
+          title: 'Temp'
+        },
+        backgroundColor: '#f1f8e9'
+    };
+    var chart = new google.visualization.LineChart(document.getElementById('line_chart'));
+    chart.draw(data, options);
+}
+
+setTimeout(function(){
+    google.setOnLoadCallback(drawLineChart());
+},2000);
+var data2 =[];
 document.onreadystatechange = function() {
     if (document.readyState == "complete") {
         setInterval(function(){
             makeRequest('GET', 'http://data.sparkfun.com/output/'+public_key+'.json', '', function(data){
-                var data2 = JSON.parse(data);
-                //console.log(data2);
+                data2 = JSON.parse(data);
+                console.log(data2);
                 temperatura = data2[0]['temp'];
             });
         }, 5000);
     }
 }
+
+
+
