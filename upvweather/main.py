@@ -41,8 +41,8 @@ JINJA_ENVIROMENT = jinja2.Environment(
 
 app_id = "upvweather"
 
-consumer_key='2HK8rTL1TPE5ogeAp1AvcjIsb'
-consumer_secret='Y6hwTLWZo9VXhQKvypEoKB09JT2uozvklggJor5ycogLUPjHQU'
+consumer_key='IgmyMb1s1BvV2FaGUJJKWXmnE'
+consumer_secret='QaF3mMpXhlInjIqs5kHBKn70JRvtdOvpb1LoegqenB2GHSiAYc'
 
 config = {}
 config['webapp2_extras.sessions'] = {
@@ -54,7 +54,7 @@ class TwitterLogin(BaseHandler):
             url="https://api.twitter.com/oauth/request_token"
             metodoa = "POST"
 
-            callback_url ='https://upvweather.appspot.com/oauth_callback'
+            callback_url ='https://upvweather.appspot.com/twitter_callback'
             oauth_parametroak = {'oauth_callback':callback_url}
 
             helper = createAuthHeader(metodoa, url, oauth_parametroak, "" , None)
@@ -129,7 +129,6 @@ class SendATweet(BaseHandler):
         http = httplib2.Http()
         response , body = http.request(url+'?status='+urllib.quote(status,''),method=metodoa,headers=goiburuak,body=None)
 
-
 class MainHandler(BaseHandler):
     def get(self):
         f = open('index.html')
@@ -195,7 +194,7 @@ def createRequestSignature(method, base_url, oauth_header, http_params, oauth_to
 
 app = webapp2.WSGIApplication([
     ("/", MainHandler),
-    ('/oauth_callback', OAuthCallback),
+    ('/twitter_callback', OAuthCallback),
     ('/TwitterLogin',TwitterLogin),
     ('/SendATweet',SendATweet),
 ],config=config, debug=True)

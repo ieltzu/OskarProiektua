@@ -28,7 +28,7 @@ function makeRequest(method, url, body, callback, async) {
 var public_key = 'dZaoR0p6pasmppMl5KRd';
 var temperatura = 0.0
 
-makeRequest('GET', 'http://data.sparkfun.com/output/'+public_key+'.json', '', function(data){
+makeRequest('GET', 'https://data.sparkfun.com/output/'+public_key+'.json', '', function(data){
         var data2 = JSON.parse(data);
         temperatura = data2[0]['temp'];
 }, false);
@@ -53,7 +53,7 @@ var chart = new google.visualization.Gauge(document.getElementById('chart_div'))
 chart.draw(data, options);
 
 setInterval(function() {
-    makeRequest('GET', 'http://data.sparkfun.com/output/'+public_key+'.json', '', function(datos){
+    makeRequest('GET', 'https://data.sparkfun.com/output/'+public_key+'.json', '', function(datos){
         var datos = JSON.parse(datos);
         data.setValue(0, 1, datos[0]['temp']);
         chart.draw(data, options);
@@ -100,7 +100,7 @@ var data2 =[];
 document.onreadystatechange = function() {
     if (document.readyState == "complete") {
         setInterval(function(){
-            makeRequest('GET', 'http://data.sparkfun.com/output/'+public_key+'.json', '', function(data){
+            makeRequest('GET', 'https://data.sparkfun.com/output/'+public_key+'.json', '', function(data){
                 data2 = JSON.parse(data);
                 console.log(data2);
                 temperatura = data2[0]['temp'];
@@ -109,5 +109,12 @@ document.onreadystatechange = function() {
     }
 }
 
+document.getElementById('dropb').addEventListener("click", function(event){
+
+});
+
+document.getElementById('twitb').addEventListener("click", function(event){
+
+});
 
 
