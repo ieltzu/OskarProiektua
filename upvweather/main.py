@@ -187,7 +187,9 @@ def createRequestSignature(method, base_url, oauth_header, http_params, oauth_to
 
     return oauth_signature[:-1]
 
-
+class DropboxCallback(BaseHandler):
+    def get(self):
+        self.response.write("TO DO")
 
 
 
@@ -197,4 +199,5 @@ app = webapp2.WSGIApplication([
     ('/twitter_callback', OAuthCallback),
     ('/TwitterLogin',TwitterLogin),
     ('/SendATweet',SendATweet),
+    ('/dropbox_callback', DropboxCallback)
 ],config=config, debug=True)
