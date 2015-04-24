@@ -55,6 +55,6 @@ while True:
     print response.status
     print response.getheader('Location')
     print edukia
-    time.sleep(5)
+    time.sleep(1)
 
 
