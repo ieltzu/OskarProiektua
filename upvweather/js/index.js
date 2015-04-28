@@ -27,39 +27,76 @@ function makeRequest(method, url, body, callback, async) {
 }
 var public_key = 'dZaoR0p6pasmppMl5KRd';
 var temperatura = 0.0;
-
+var data2 = [{temp: 4},{temp: 55}];
 makeRequest('GET', 'https://data.sparkfun.com/output/'+public_key+'.json', '', function(data){
-        var data2 = JSON.parse(data);
+        data2 = JSON.parse(data);
         temperatura = data2[0]['temp'];
 }, false);
-
+var graficos = {Gauge: {}, LineChart: {}};
 function drawChart() {
 
-            var data = google.visualization.arrayToDataTable([
-                ['Label', 'Value'],
-                ['Temp', temperatura],
-                ]);
+    //var data = google.visualization.arrayToDataTable([
+    graficos.Gauge.data = google.visualization.arrayToDataTable([
+        ['Label', 'Value'],
+        ['Temp', temperatura],
+        ]);
 
-            var options = {
-              width: 400, height: 120,
-              redFrom: 90, redTo: 100,
-              yellowFrom:75, yellowTo: 90,
-              minorTicks: 5
-            };
+    graficos.Gauge.options = {
+      width: 400, height: 120,
+      redFrom: 45, redTo: 50,
+      yellowFrom:35, yellowTo: 45,
+      minorTicks: 5,
+        max: 50,
+        min: -10,
+        greenColor: "#0EAFFF",
+        greenFrom:-10, greenTo: 0
+    };
 
-            var chart = new google.visualization.Gauge(document.getElementById('chart_div'));
+    //var chart = new google.visualization.Gauge(document.getElementById('chart_div'));
+    graficos.Gauge.chart = new google.visualization.Gauge(document.getElementById('chart_div'));
 
-            chart.draw(data, options);
+    graficos.Gauge.chart.draw(graficos.Gauge.data, graficos.Gauge.options);
+    var arr = [];
+    /*for (el = 40; el >= 0; el--){
+        var instance = data2[el];
+        arr.push([new Date(instance.timestamp), parseFloat(instance.temp)]);
+    }*/
+    //var data = new google.visualization.DataTable();
+    graficos.LineChart.data = new google.visualization.DataTable();
+    graficos.LineChart.data.addColumn('date', 'X');
+    graficos.LineChart.data.addColumn('number', 'Temp');
+    graficos.LineChart.data.addRows(arr);
+    var options = {
+        title: 'UPV Weather',
+        curveType: 'none',
+        legend: { position: 'bottom' },
+        hAxis: {
+          title: 'Time'
+        },
+        vAxis: {
+          title: 'Temp'
+        },
+        backgroundColor: '#f1f8e9'
+    };
+    graficos.LineChart.chart = new google.visualization.LineChart(document.getElementById('line_chart'));
+    graficos.LineChart.chart.draw(graficos.LineChart.data, options);
+
+    setInterval(function() {
+        makeRequest('GET', 'https://data.sparkfun.com/output/'+public_key+'.json', '', function(datos){
+            data2 = JSON.parse(datos);
+            var primero = data2[0]['temp'].split(".");
+            graficos.Gauge.data.setValue(0, 1, primero[0]+"."+primero[1][0]);
+            graficos.Gauge.chart.draw(graficos.Gauge.data, graficos.Gauge.options);
 
             var arr = [];
-            for (el in data2){
-                var instance = data2.pop();
-                arr.push([parseFloat(el), parseFloat(instance.temp)]);
+            for (el = 40; el >= 0; el--){
+                var instance = data2[el];
+                arr.push([new Date(instance.timestamp), parseFloat(instance.temp)]);
             }
-            var data = new google.visualization.DataTable();
-            data.addColumn('number', 'X');
-            data.addColumn('number', 'Temp');
-            data.addRows(arr);
+            graficos.LineChart.data = new google.visualization.DataTable();
+            graficos.LineChart.data.addColumn('date', 'X');
+            graficos.LineChart.data.addColumn('number', 'Temp');
+            graficos.LineChart.data.addRows(arr);
             var options = {
                 title: 'UPV Weather',
                 curveType: 'none',
@@ -72,26 +109,15 @@ function drawChart() {
                 },
                 backgroundColor: '#f1f8e9'
             };
-            var chart = new google.visualization.LineChart(document.getElementById('line_chart'));
-            chart.draw(data, options);
+            graficos.LineChart.chart = new google.visualization.LineChart(document.getElementById('line_chart'));
+            graficos.LineChart.chart.draw(graficos.LineChart.data, options);
+        });
+    }, 5000);
+}
 
-            setInterval(function() {
-                makeRequest('GET', 'https://data.sparkfun.com/output/'+public_key+'.json', '', function(datos){
-                    var datos = JSON.parse(datos);
-                    data.setValue(0, 1, datos[0]['temp']);
-                    chart.draw(data, options);
-                });
-                data.setValue(0, 1, temperatura);
-                chart.draw(data, options);
-                drawLineChart();
-            }, 5000);
-        }
+google.load("visualization", "1", {packages:["gauge", "corechart", "line"]});
 
-        google.load("visualization", "1", {packages:["gauge", "corechart", "line"]});
-
-        google.setOnLoadCallback(drawChart);
-
-var data2 =[];
+google.setOnLoadCallback(drawChart);
 document.onreadystatechange = function() {
     if (document.readyState == "complete") {
 

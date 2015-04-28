@@ -43,10 +43,13 @@ print('Getting temperature data from Arduino via Serial connection')
 print('#####################################')
 #com_port = serial.Serial('/dev/tty.usbmodem1411', 9600)
 
-temperature = ''
+temperature = 20
 while True:
     #temperature = float(com_port.readline())
-    temperature = random.random() * 40
+    t = temperature + 3 - (random.random() * 6)
+    while t>40 or t<0:
+        t = temperature + 3 - (random.random() * 6)
+    temperature = t
     print str(temperature)
     response, edukia = makeRequest(url='http://data.sparkfun.com/input/dZaoR0p6pasmppMl5KRd',method='POST',body="temp="+str(temperature),headers={
         'Phant-Private-Key': 'eEwYG2aKawfW55ow8Gp7',
@@ -55,6 +58,6 @@ while True:
     print response.status
     print response.getheader('Location')
     print edukia
-    time.sleep(1)
+    time.sleep(5)
 
 
