@@ -43,13 +43,13 @@ function drawChart() {
 
     graficos.Gauge.options = {
       width: 400, height: 120,
-      redFrom: 45, redTo: 50,
-      yellowFrom:35, yellowTo: 45,
+      redFrom: 44, redTo: 50,
+      yellowFrom:35, yellowTo: 44,
       minorTicks: 5,
         max: 50,
         min: -10,
         greenColor: "#0EAFFF",
-        greenFrom:-10, greenTo: 0
+        greenFrom:-10, greenTo: -1
     };
 
     //var chart = new google.visualization.Gauge(document.getElementById('chart_div'));

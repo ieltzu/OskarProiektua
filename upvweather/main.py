@@ -117,17 +117,21 @@ class OAuthCallback(BaseHandler):
 
 class SendATweet(BaseHandler):
     def get(self):
-        status=self.request.get("Tweet")
-        status=urllib.unquote(status)
-        oauth_token=self.session['oauth_token']
-        oauth_token_secret=self.session['oauth_token_secret']
-        url='https://api.twitter.com/1.1/statuses/update.json'
-        goiburuak={'status':status,}
-        oauth_parametroak={'oauth_token':oauth_token,}
-        metodoa = 'POST'
-        goiburuak['Authorization']= createAuthHeader(metodoa, url, oauth_parametroak, goiburuak , oauth_token_secret)
-        http = httplib2.Http()
-        response , body = http.request(url+'?status='+urllib.quote(status,''),method=metodoa,headers=goiburuak,body=None)
+        try:
+            status=self.request.get("Tweet")
+            status=urllib.unquote(status)
+            oauth_token=self.session['oauth_token']
+            oauth_token_secret=self.session['oauth_token_secret']
+            url='https://api.twitter.com/1.1/statuses/update.json'
+            goiburuak={'status':status,}
+            oauth_parametroak={'oauth_token':oauth_token,}
+            metodoa = 'POST'
+            goiburuak['Authorization']= createAuthHeader(metodoa, url, oauth_parametroak, goiburuak , oauth_token_secret)
+            http = httplib2.Http()
+            response , body = http.request(url+'?status='+urllib.quote(status,''),method=metodoa,headers=goiburuak,body=None)
+            self.redirect("/")
+        except Exception:
+            self.redirect("/TwitterLogin")
 
 class MainHandler(BaseHandler):
     def get(self):
