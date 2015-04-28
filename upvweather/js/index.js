@@ -120,21 +120,13 @@ google.load("visualization", "1", {packages:["gauge", "corechart", "line"]});
 google.setOnLoadCallback(drawChart);
 document.onreadystatechange = function() {
     if (document.readyState == "complete") {
+        document.getElementById("dropb").addEventListener("click",function(ev){
+            makeRequest('GET', '/csvDownload','',function(data){
 
-        /*setInterval(function(){
-            makeRequest('GET', 'https://data.sparkfun.com/output/'+public_key+'.json', '', function(data){
-                data2 = JSON.parse(data);
-                console.log(data2);
-                temperatura = data2[0]['temp'];
-            });
-        }, 5000);
-
-        /*document.getElementById('dropb').addEventListener("click", function(event){
+            },false);
         });
-        document.getElementById('twitb').addEventListener("click", function(event){
-        });*/
-
     }
 };
+
 
 
