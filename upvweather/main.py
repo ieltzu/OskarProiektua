@@ -15,7 +15,6 @@ import hashlib
 
 
 #from webapp2_extras import sessions
-
 class BaseHandler(webapp2.RequestHandler):
 
     def dispatch(self):
@@ -48,6 +47,11 @@ config = {}
 config['webapp2_extras.sessions'] = {
     'secret_key': 'some-secret-key',
 }
+
+gae_callback_url = 'https://upvweather.appspot.com/dropbox_callback'
+dropbox_app_key = 'cevwk5nifw9caxz'
+dropbox_app_secret = 'z2xglld2onsd7ll'
+
 
 class TwitterLogin(BaseHandler):
     def get(self):
@@ -187,11 +191,52 @@ def createRequestSignature(method, base_url, oauth_header, http_params, oauth_to
 
     return oauth_signature[:-1]
 
-class DropboxCallback(BaseHandler):
+class LoginAndAuthorize(webapp2.RedirectHandler):
     def get(self):
-        self.response.write("TO DO")
+        url = 'https://www.dropbox.com/1/oauth2/authorize'
+        parametroak = {
+            'response_type': 'code',
+            'client_id': dropbox_app_key,
+            'redirect_uri': gae_callback_url
+        }
+        self.redirect(url+'?'+urllib.urlencode(parametroak))
+
+class dropboxCallback(BaseHandler):
+    def get(self):
+        code = self.request.params.get('code')
+
+        http = httplib2.Http()
+        url = 'https://api.dropbox.com/1/oauth2/token'
+        method = 'POST'
+        parameters = {
+            'code': code,
+            'grant_type': 'authorization_code',
+            'client_id': dropbox_app_key,
+            'client_secret': dropbox_app_secret,
+            'redirect_uri': gae_callback_url
+        }
+        parameters = urllib.urlencode(parameters)
+
+        erantzuna, edukia = http.request(url, method=method,body=parameters, headers={})
+        json_edukia = json.loads(edukia)
+        self.session['access_token'] = json_edukia['access_token']
 
 
+class CsvDownload(BaseHandler):
+	acces_token = self.session['access_token']
+	http = httplib2.Http()
+	url = '	https://data.sparkfun.com/output/dZaoR0p6pasmppMl5KRd.csv'
+	method = 'GET'
+	erantzuna, edukia = http.request(url,method=method,body={}, headers={})
+	method = 'PUT'
+	path = '/UPV_Weather/weather.csv'
+	url = 'https://api-content.dropbox.com/1/files_put/auto'+path
+	parametroak = {'overwrite': 'false'}
+	parametroak = urllib.urlencode(parametroak)
+	goiburuak = {}
+	goiburuak['Authorization'] = "Bearer "+acces_token
+	erantzuna, edukia = http.request(url+"?"+parametroak, method=method,body=edukia, headers=goiburuak)
+	self.response.write("All done.")
 
 
 app = webapp2.WSGIApplication([
@@ -199,5 +244,8 @@ app = webapp2.WSGIApplication([
     ('/twitter_callback', OAuthCallback),
     ('/TwitterLogin',TwitterLogin),
     ('/SendATweet',SendATweet),
+    ('/dropbox_callback', DropboxCallback),
+    ('/csvDownload', CsvDownload),
+    ('/LoginAndAuthorize', LoginAndAuthorize),
     ('/dropbox_callback', DropboxCallback)
 ],config=config, debug=True)
