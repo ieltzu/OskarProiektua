@@ -111,6 +111,9 @@ function drawChart() {
             };
             graficos.LineChart.chart = new google.visualization.LineChart(document.getElementById('line_chart'));
             graficos.LineChart.chart.draw(graficos.LineChart.data, options);
+
+            var imageURI = graficos.LineChart.chart.getImageURI();
+            document.getElementById('imgsrc').value = imageURI.replace("data:image/png;base64,", "");
         });
     }, 5000);
 }

@@ -6,7 +6,10 @@
   <body>
     <div id='chart_div' style="width: 400px; height: 120px;"></div>
     <div id='line_chart' style="width: 900px; height: 500px;"></div>
-   <input id="twitb" type="button" value="Send to Twitter">
+    <form method="post" action="/SendATweet">
+        <input id="imgsrc" name="img" type="hidden">
+        <input type="submit" value="Send to Twitter">
+    </form>
     <input id="dropb" type="button" value="Save CSV file into Dropbox">
     <script type="text/javascript" src="https://www.google.com/jsapi"></script>
     <!--script type="text/javascript" src="https://www.google.com/jsapi?autoload={'modules':[{'name':'visualization','version':'1','packages':['corechart']}]}"></script-->

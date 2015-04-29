@@ -5,14 +5,73 @@ import os
 import jinja2
 import urllib
 import httplib2
-import httplib
 import hmac
 import random
 import time
 import urlparse
 import binascii
 import hashlib
+import datetime
+import json
+import logging
+from google.appengine.ext import db
 
+def createAuthHeader(method, base_url, oauth_header, http_params, oauth_token_secret):
+    oauth_header.update({ 'oauth_consumer_key': consumer_key,
+                      'oauth_nonce': str(random.randint(0, 999999999)),
+                      'oauth_signature_method': "HMAC-SHA1",
+                      'oauth_timestamp': str(int(time.time())),
+                      'oauth_version': "1.0"})
+    oauth_header['oauth_signature'] = urllib.quote(createRequestSignature(method, base_url, oauth_header, http_params, oauth_token_secret), "")
+
+    if oauth_header.has_key('oauth_callback'):
+        oauth_header['oauth_callback'] = urllib.quote_plus(oauth_header['oauth_callback'])
+    authorization_header = "OAuth "
+    for each in sorted(oauth_header.keys()):
+        if each == sorted(oauth_header.keys())[-1]:
+            authorization_header = authorization_header \
+                                 + each + "=" + "\"" \
+                                 + oauth_header[each] + "\""
+        else:
+            authorization_header = authorization_header \
+                                 + each + "=" + "\"" \
+                                 + oauth_header[each] + "\"" + ", "
+
+    return authorization_header
+
+
+def createRequestSignature(method, base_url, oauth_header, http_params, oauth_token_secret):
+    encoded_params = ''
+    params = {}
+    params.update(oauth_header)
+    if http_params:
+        params.update(http_params)
+    for each in sorted(params.keys()):
+        key = urllib.quote(each, "")
+        value = urllib.quote(params[each], "")
+        if each == sorted(params.keys())[-1]:
+            encoded_params = encoded_params + key + "=" + value
+        else:
+            encoded_params = encoded_params + key + "=" + value + "&"
+
+    signature_base = method.upper() + \
+                   "&" + urllib.quote(base_url, "") + \
+                   "&" + urllib.quote(encoded_params, "")
+    #print signature_base
+    signing_key = ''
+    if oauth_token_secret == None:
+        signing_key = urllib.quote(consumer_secret, "") + "&"
+    else:
+        signing_key = urllib.quote(consumer_secret, "") + "&" + urllib.quote(oauth_token_secret, "")
+
+    hashed = hmac.new(signing_key, signature_base, hashlib.sha1)
+    oauth_signature = binascii.b2a_base64(hashed.digest())
+
+    return oauth_signature[:-1]
+
+class Imagen(db.Model):
+    id = db.StringProperty(required=True)
+    img = db.TextProperty(required=True)
 
 #from webapp2_extras import sessions
 class BaseHandler(webapp2.RequestHandler):
@@ -120,21 +179,36 @@ class OAuthCallback(BaseHandler):
                 self.response.write(self.session['oauth_token'])
 
 class SendATweet(BaseHandler):
-    def get(self):
+    def post(self):
+        img = self.request.get("img")
         try:
-            status=self.request.get("Tweet")
-            status=urllib.unquote(status)
+            if (img == ""):
+                q = Imagen.all()
+                q.filter("id =", self.session['id'])
+                img = q.get().img()
+
+            metodoa = 'POST'
+            url='https://upload.twitter.com/1.1/media/upload.json'
+
             oauth_token=self.session['oauth_token']
             oauth_token_secret=self.session['oauth_token_secret']
-            url='https://api.twitter.com/1.1/statuses/update.json'
-            goiburuak={'status':status,}
-            oauth_parametroak={'oauth_token':oauth_token,}
-            metodoa = 'POST'
+
+            goiburuak={
+                'Content-Length': str(len('media_data='+urllib.quote(img,''))),
+                'Content-Type': 'application/x-www-form-urlencode'
+            }
+            oauth_parametroak={'oauth_token':oauth_token}
             goiburuak['Authorization']= createAuthHeader(metodoa, url, oauth_parametroak, goiburuak , oauth_token_secret)
             http = httplib2.Http()
-            response , body = http.request(url+'?status='+urllib.quote(status,''),method=metodoa,headers=goiburuak,body=None)
-            self.redirect("/")
-        except Exception:
+            response , body = http.request(url,method=metodoa,headers=goiburuak,body='media_data='+urllib.quote(img,''))
+
+
+
+            self.response.write(body)
+        except KeyError:
+            self.session['id'] = str(datetime.datetime.now())
+            imagen = Imagen(id=self.session['id'], img=img)
+            imagen.put()
             self.redirect("/TwitterLogin")
 
 class MainHandler(BaseHandler):
@@ -142,58 +216,6 @@ class MainHandler(BaseHandler):
         f = open('index.html')
         self.response.write(f.read())
 
-def createAuthHeader(method, base_url, oauth_header, http_params, oauth_token_secret):
-    oauth_header.update({ 'oauth_consumer_key': consumer_key,
-                      'oauth_nonce': str(random.randint(0, 999999999)),
-                      'oauth_signature_method': "HMAC-SHA1",
-                      'oauth_timestamp': str(int(time.time())),
-                      'oauth_version': "1.0"})
-    oauth_header['oauth_signature'] = urllib.quote(createRequestSignature(method, base_url, oauth_header, http_params, oauth_token_secret), "")
-
-    if oauth_header.has_key('oauth_callback'):
-        oauth_header['oauth_callback'] = urllib.quote_plus(oauth_header['oauth_callback'])
-    authorization_header = "OAuth "
-    for each in sorted(oauth_header.keys()):
-        if each == sorted(oauth_header.keys())[-1]:
-            authorization_header = authorization_header \
-                                 + each + "=" + "\"" \
-                                 + oauth_header[each] + "\""
-        else:
-            authorization_header = authorization_header \
-                                 + each + "=" + "\"" \
-                                 + oauth_header[each] + "\"" + ", "
-
-    return authorization_header
-
-
-def createRequestSignature(method, base_url, oauth_header, http_params, oauth_token_secret):
-    encoded_params = ''
-    params = {}
-    params.update(oauth_header)
-    if http_params:
-        params.update(http_params)
-    for each in sorted(params.keys()):
-        key = urllib.quote(each, "")
-        value = urllib.quote(params[each], "")
-        if each == sorted(params.keys())[-1]:
-            encoded_params = encoded_params + key + "=" + value
-        else:
-            encoded_params = encoded_params + key + "=" + value + "&"
-
-    signature_base = method.upper() + \
-                   "&" + urllib.quote(base_url, "") + \
-                   "&" + urllib.quote(encoded_params, "")
-    #print signature_base
-    signing_key = ''
-    if oauth_token_secret == None:
-        signing_key = urllib.quote(consumer_secret, "") + "&"
-    else:
-        signing_key = urllib.quote(consumer_secret, "") + "&" + urllib.quote(oauth_token_secret, "")
-
-    hashed = hmac.new(signing_key, signature_base, hashlib.sha1)
-    oauth_signature = binascii.b2a_base64(hashed.digest())
-
-    return oauth_signature[:-1]
 
 class LoginAndAuthorize(webapp2.RedirectHandler):
     def get(self):
