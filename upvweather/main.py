@@ -182,11 +182,6 @@ class SendATweet(BaseHandler):
     def post(self):
         img = self.request.get("img")
         try:
-            if (img == ""):
-                q = Imagen.all()
-                q.filter("id =", self.session['id'])
-                img = q.get().img()
-
             method = 'POST'
             url = "https://upload.twitter.com/1.1/media/upload.json"
             oauth_token = self.session['oauth_token']
@@ -194,13 +189,21 @@ class SendATweet(BaseHandler):
 
             goiburuak={
                 'Content-Length': str(len('media_data='+urllib.quote(img,''))),
-                'Content-Type': 'application/x-www-form-urlencode'
+                'Content-Type': 'application/x-www-form-urlencode',
+                'Content-Transfer-Encoding': 'base64',
+                'meda': 'media_data'
             }
             oauth_parametroak={'oauth_token':oauth_token}
-            goiburuak['Authorization']= createAuthHeader(method, url, oauth_parametroak, goiburuak , oauth_token_secret)
+            goiburuak['Authorization']= createAuthHeader(method, url, oauth_parametroak, {} , oauth_token_secret)
             http = httplib2.Http()
+            logging.debug(method)
             response , body = http.request(url,method=method,headers=goiburuak,body='media_data='+urllib.quote(img,''))
-
+            if (response.status != 200):
+                logging.debug(str(response.status))
+                logging.debug(body)
+                del self.session['oauth_token']
+                del self.session['oauth_token_secret']
+                raise KeyError()
 
 
             self.response.write(body)
@@ -209,6 +212,31 @@ class SendATweet(BaseHandler):
             imagen = Imagen(id=self.session['id'], img=img)
             imagen.put()
             self.redirect("/TwitterLogin")
+
+    def get(self):
+        q = Imagen.all()
+        q.filter("id =", self.session['id'])
+        img = q.get().img
+        logging.debug(img)
+        method = 'POST'
+        url = "https://upload.twitter.com/1.1/media/upload.json"
+        oauth_token = self.session['oauth_token']
+        oauth_token_secret = self.session['oauth_token_secret']
+
+        goiburuak={
+            'Content-Length': str(len('media_data='+urllib.quote(img,''))),
+            'Content-Type': 'application/x-www-form-urlencode',
+            'Content-Transfer-Encoding': 'base64',
+            'meda': 'media_data'
+
+        }
+        oauth_parametroak={'oauth_token':oauth_token}
+        goiburuak['Authorization']= createAuthHeader(method, url, oauth_parametroak, {} , oauth_token_secret)
+        http = httplib2.Http()
+        logging.debug(method)
+        response , body = http.request(url,method=method,headers=goiburuak,body='media_data='+urllib.quote(img,''))
+
+        self.response.write(body)
 
 class MainHandler(BaseHandler):
     def get(self):

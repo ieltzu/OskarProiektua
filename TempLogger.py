@@ -46,7 +46,7 @@ print('#####################################')
 temperature = 20
 while True:
     #temperature = float(com_port.readline())
-    t = temperature + 3 - (random.random() * 6)
+    t = temperature + 2 - random.random()
     while t>40 or t<0:
         t = temperature + 3 - (random.random() * 6)
     temperature = t
