@@ -1,0 +1,20 @@
+body, html {
+    background-color: aliceblue;
+    text-align: center;
+    height: 100%;
+}
+body > div {
+    text-align: center;
+}
+.forms form{
+   display: inline-block;
+}
+#line_chart{
+    height: 80%;
+}
+
+#chart_div {
+    position: fixed;
+    right: 5px;
+    top: 5px;
+}
