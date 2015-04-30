@@ -121,15 +121,10 @@ function drawChart() {
 google.load("visualization", "1", {packages:["gauge", "corechart", "line"]});
 
 google.setOnLoadCallback(drawChart);
-document.onreadystatechange = function() {
+/*document.onreadystatechange = function() {
     if (document.readyState == "complete") {
-        document.getElementById("dropb").addEventListener("click",function(ev){
-            makeRequest('GET', '/csvDownload','',function(data){
-
-            },false);
-        });
     }
-};
+};*/
 
 
 

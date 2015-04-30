@@ -172,7 +172,7 @@ class OAuthCallback(BaseHandler):
                 self.session['oauth_token_secret']=oauth_token_secret
                 self.session['screen_name']=datuak['screen_name']
 
-                self.redirect('https://upvweather.appspot.com/')
+                self.redirect('/SendATweet')
 
             else:
                 self.response.write('Error:')
@@ -187,20 +187,19 @@ class SendATweet(BaseHandler):
                 q.filter("id =", self.session['id'])
                 img = q.get().img()
 
-            metodoa = 'POST'
-            url='https://upload.twitter.com/1.1/media/upload.json'
-
-            oauth_token=self.session['oauth_token']
-            oauth_token_secret=self.session['oauth_token_secret']
+            method = 'POST'
+            url = "https://upload.twitter.com/1.1/media/upload.json"
+            oauth_token = self.session['oauth_token']
+            oauth_token_secret = self.session['oauth_token_secret']
 
             goiburuak={
                 'Content-Length': str(len('media_data='+urllib.quote(img,''))),
                 'Content-Type': 'application/x-www-form-urlencode'
             }
             oauth_parametroak={'oauth_token':oauth_token}
-            goiburuak['Authorization']= createAuthHeader(metodoa, url, oauth_parametroak, goiburuak , oauth_token_secret)
+            goiburuak['Authorization']= createAuthHeader(method, url, oauth_parametroak, goiburuak , oauth_token_secret)
             http = httplib2.Http()
-            response , body = http.request(url,method=metodoa,headers=goiburuak,body='media_data='+urllib.quote(img,''))
+            response , body = http.request(url,method=method,headers=goiburuak,body='media_data='+urllib.quote(img,''))
 
 
 
@@ -245,25 +244,30 @@ class dropboxCallback(BaseHandler):
 
         erantzuna, edukia = http.request(url, method=method,body=parameters, headers={})
         json_edukia = json.loads(edukia)
+        logging.debug(edukia)
         self.session['access_token'] = json_edukia['access_token']
+        self.redirect('/csvDownload')
 
 
 class CsvDownload(BaseHandler):
     def get(self):
-        acces_token = self.session['access_token']
-        http = httplib2.Http()
-        url = '	https://data.sparkfun.com/output/dZaoR0p6pasmppMl5KRd.csv'
-        method = 'GET'
-        erantzuna, edukia = http.request(url,method=method,body={}, headers={})
-        method = 'PUT'
-        path = '/UPV_Weather/weather.csv'
-        url = 'https://api-content.dropbox.com/1/files_put/auto'+path
-        parametroak = {'overwrite': 'false'}
-        parametroak = urllib.urlencode(parametroak)
-        goiburuak = {}
-        goiburuak['Authorization'] = "Bearer "+acces_token
-        erantzuna, edukia = http.request(url+"?"+parametroak, method=method,body=edukia, headers=goiburuak)
-        self.response.write("All done.")
+        try:
+            acces_token = self.session['access_token']
+            http = httplib2.Http()
+            url = 'https://data.sparkfun.com/output/dZaoR0p6pasmppMl5KRd.csv'
+            method = 'GET'
+            erantzuna, edukia = http.request(url,method=method,body={}, headers={})
+            method = 'PUT'
+            path = '/UPV_Weather/weather.csv'
+            url = 'https://api-content.dropbox.com/1/files_put/auto'+path
+            parametroak = {'overwrite': 'true'}
+            parametroak = urllib.urlencode(parametroak)
+            goiburuak = {}
+            goiburuak['Authorization'] = "Bearer "+acces_token
+            erantzuna, edukia = http.request(url+"?"+parametroak, method=method,body=edukia, headers=goiburuak)
+            self.redirect("/")
+        except KeyError:
+            self.redirect('/LoginAndAuthorize')
 
 
 app = webapp2.WSGIApplication([

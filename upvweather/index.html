@@ -10,7 +10,9 @@
         <input id="imgsrc" name="img" type="hidden">
         <input type="submit" value="Send to Twitter">
     </form>
-    <input id="dropb" type="button" value="Save CSV file into Dropbox">
+    <form method="GET" action="/csvDownload">
+        <input type="submit" value="Save CSV file into Dropbox">
+    </form>
     <script type="text/javascript" src="https://www.google.com/jsapi"></script>
     <!--script type="text/javascript" src="https://www.google.com/jsapi?autoload={'modules':[{'name':'visualization','version':'1','packages':['corechart']}]}"></script-->
     <script type="text/javascript" src='js/index.js'></script>
