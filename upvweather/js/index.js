@@ -28,10 +28,6 @@ function makeRequest(method, url, body, callback, async) {
 var public_key = 'dZaoR0p6pasmppMl5KRd';
 var temperatura = 0.0;
 var data2 = [{temp: 4},{temp: 55}];
-makeRequest('GET', 'https://data.sparkfun.com/output/'+public_key+'.json', '', function(data){
-        data2 = JSON.parse(data);
-        temperatura = data2[0]['temp'];
-}, false);
 var graficos = {Gauge: {}, LineChart: {}};
 function drawChart() {
 
@@ -57,11 +53,6 @@ function drawChart() {
 
     graficos.Gauge.chart.draw(graficos.Gauge.data, graficos.Gauge.options);
     var arr = [];
-    /*for (el = 40; el >= 0; el--){
-        var instance = data2[el];
-        arr.push([new Date(instance.timestamp), parseFloat(instance.temp)]);
-    }*/
-    //var data = new google.visualization.DataTable();
     graficos.LineChart.data = new google.visualization.DataTable();
     graficos.LineChart.data.addColumn('date', 'X');
     graficos.LineChart.data.addColumn('number', 'Temp');
@@ -80,7 +71,6 @@ function drawChart() {
     };
     graficos.LineChart.chart = new google.visualization.LineChart(document.getElementById('line_chart'));
     graficos.LineChart.chart.draw(graficos.LineChart.data, options);
-
     setInterval(function() {
         makeRequest('GET', 'https://data.sparkfun.com/output/'+public_key+'.json', '', function(datos){
             data2 = JSON.parse(datos);
@@ -120,11 +110,45 @@ function drawChart() {
 
 google.load("visualization", "1", {packages:["gauge", "corechart", "line"]});
 
-google.setOnLoadCallback(drawChart);
-/*document.onreadystatechange = function() {
+
+document.onreadystatechange = function() {
     if (document.readyState == "complete") {
+        google.setOnLoadCallback(drawChart);
+        makeRequest('GET', 'https://data.sparkfun.com/output/'+public_key+'.json', '', function(datos){
+            data2 = JSON.parse(datos);
+            var primero = data2[0]['temp'].split(".");
+            graficos.Gauge.data.setValue(0, 1, primero[0]+"."+primero[1][0]);
+            graficos.Gauge.chart.draw(graficos.Gauge.data, graficos.Gauge.options);
+
+            var arr = [];
+            for (el = 40; el >= 0; el--){
+                var instance = data2[el];
+                arr.push([new Date(instance.timestamp), parseFloat(instance.temp)]);
+            }
+            graficos.LineChart.data = new google.visualization.DataTable();
+            graficos.LineChart.data.addColumn('date', 'X');
+            graficos.LineChart.data.addColumn('number', 'Temp');
+            graficos.LineChart.data.addRows(arr);
+            var options = {
+                title: 'UPV Weather',
+                curveType: 'none',
+                legend: { position: 'bottom' },
+                hAxis: {
+                  title: 'Time'
+                },
+                vAxis: {
+                  title: 'Temp'
+                },
+                backgroundColor: '#f1f8e9'
+            };
+            graficos.LineChart.chart = new google.visualization.LineChart(document.getElementById('line_chart'));
+            graficos.LineChart.chart.draw(graficos.LineChart.data, options);
+
+            var imageURI = graficos.LineChart.chart.getImageURI();
+            document.getElementById('imgsrc').value = imageURI.replace("data:image/png;base64,", "");
+        });
     }
-};*/
+};
 
 
 

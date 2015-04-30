@@ -1,18 +1,21 @@
 <!DOCTYPE html>
 <html>
   <head>
-
+      <title>UPV - Weather</title>
+      <link href="/css/index.css" rel="stylesheet" type="text/css"/>
   </head>
   <body>
     <div id='chart_div' style="width: 400px; height: 120px;"></div>
     <div id='line_chart' style="width: 900px; height: 500px;"></div>
-    <form method="post" action="/SendATweet">
-        <input id="imgsrc" name="img" type="hidden">
-        <input type="submit" value="Send to Twitter">
-    </form>
-    <form method="GET" action="/csvDownload">
-        <input type="submit" value="Save CSV file into Dropbox">
-    </form>
+    <div class="forms">
+        <form method="post" action="/SendATweet">
+            <input id="imgsrc" name="img" type="hidden">
+            <input type="submit" value="Send to Twitter">
+        </form>
+        <form method="GET" action="/csvDownload">
+            <input type="submit" value="Save CSV file into Dropbox">
+        </form>
+    </div>
     <script type="text/javascript" src="https://www.google.com/jsapi"></script>
     <!--script type="text/javascript" src="https://www.google.com/jsapi?autoload={'modules':[{'name':'visualization','version':'1','packages':['corechart']}]}"></script-->
     <script type="text/javascript" src='js/index.js'></script>
