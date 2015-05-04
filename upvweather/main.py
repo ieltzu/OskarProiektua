@@ -189,15 +189,15 @@ class SendATweet(BaseHandler):
 
             goiburuak={
                 'Content-Length': str(len('media_data='+urllib.quote(img,''))),
-                'Content-Type': 'application/x-www-form-urlencode',
-                'Content-Transfer-Encoding': 'base64',
-                'meda': 'media_data'
+                'Content-Type': 'multipart/form-data',
+                #'Content-Transfer-Encoding': 'base64',
+                'media': 'media_data'
             }
             oauth_parametroak={'oauth_token':oauth_token}
             goiburuak['Authorization']= createAuthHeader(method, url, oauth_parametroak, {} , oauth_token_secret)
             http = httplib2.Http()
             logging.debug(method)
-            response , body = http.request(url,method=method,headers=goiburuak,body='media_data='+urllib.quote(img,''))
+            response , body = http.request(url,method=method,headers=goiburuak,body='media='+urllib.quote(img,''))
             if (response.status != 200):
                 logging.debug(str(response.status))
                 logging.debug(body)
@@ -225,16 +225,16 @@ class SendATweet(BaseHandler):
 
         goiburuak={
             'Content-Length': str(len('media_data='+urllib.quote(img,''))),
-            'Content-Type': 'application/x-www-form-urlencode',
-            'Content-Transfer-Encoding': 'base64',
-            'meda': 'media_data'
+            'Content-Type': 'multipart/form-data',
+            #'Content-Transfer-Encoding': 'base64',
+            'media': 'media_data'
 
         }
         oauth_parametroak={'oauth_token':oauth_token}
         goiburuak['Authorization']= createAuthHeader(method, url, oauth_parametroak, {} , oauth_token_secret)
         http = httplib2.Http()
         logging.debug(method)
-        response , body = http.request(url,method=method,headers=goiburuak,body='media_data='+urllib.quote(img,''))
+        response , body = http.request(url,method=method,headers=goiburuak,body='media='+urllib.quote(img,''))
 
         self.response.write(body)
 
