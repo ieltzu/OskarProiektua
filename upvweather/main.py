@@ -180,64 +180,91 @@ class OAuthCallback(BaseHandler):
 
 class SendATweet(BaseHandler):
     def post(self):
-        img = self.request.get("img")
+        img = self.request.get("img").replace(' ', '+').decode('base64')
+
         try:
             method = 'POST'
             url = "https://upload.twitter.com/1.1/media/upload.json"
             oauth_token = self.session['oauth_token']
             oauth_token_secret = self.session['oauth_token_secret']
 
+            edukia = '--muga\r\n'
+            edukia += 'Content-Disposition: form-data; name="media"; filename="chart.png"\r\n'
+            edukia += '\r\n' + img + '\r\n'
+            edukia += '--muga--'
+
             goiburuak={
-                'Content-Length': str(len('media_data='+urllib.quote(img,''))),
-                'Content-Type': 'multipart/form-data',
-                #'Content-Transfer-Encoding': 'base64',
-                'media': 'media_data'
+                'Content-Length': str(len(edukia)),
+                'Content-Type': 'multipart/form-data; boundary=muga',
             }
             oauth_parametroak={'oauth_token':oauth_token}
-            goiburuak['Authorization']= createAuthHeader(method, url, oauth_parametroak, {} , oauth_token_secret)
+            goiburuak['Authorization']= createAuthHeader(method, url, oauth_parametroak, '' , oauth_token_secret)
             http = httplib2.Http()
-            logging.debug(method)
-            response , body = http.request(url,method=method,headers=goiburuak,body='media='+urllib.quote(img,''))
+            response , content = http.request(url,method=method,headers=goiburuak,body=edukia)
+
+            argazkia = json.loads(content)
+            argazkia = argazkia["media_id"]
+
+            url='https://api.twitter.com/1.1/statuses/update.json'
+            goiburuak={}
+            goiburuak={'status':'EHU-ko tenperatura neurgailua',
+                       'media_ids':str(argazkia)}
+            oauth_parametroak={'oauth_token':oauth_token,}
+            metodoa = 'POST'
+            goiburuak['Authorization']= createAuthHeader(metodoa, url, oauth_parametroak, goiburuak , oauth_token_secret)
+            http = httplib2.Http()
+            response , body = http.request(url+'?status='+urllib.quote(goiburuak['status'])+'&media_ids='+urllib.quote(str(goiburuak['media_ids']),''),method=metodoa,headers=goiburuak,body=None)
+
+
             if (response.status != 200):
                 logging.debug(str(response.status))
-                logging.debug(body)
+                logging.debug(content)
                 del self.session['oauth_token']
                 del self.session['oauth_token_secret']
                 raise KeyError()
 
 
-            self.response.write(body)
+            self.redirect('/')
         except KeyError:
             self.session['id'] = str(datetime.datetime.now())
             imagen = Imagen(id=self.session['id'], img=img)
             imagen.put()
             self.redirect("/TwitterLogin")
 
+
     def get(self):
         q = Imagen.all()
-        q.filter("id =", self.session['id'])
+        q.filter("id=", self.session['id'])
         img = q.get().img
-        logging.debug(img)
-        method = 'POST'
-        url = "https://upload.twitter.com/1.1/media/upload.json"
         oauth_token = self.session['oauth_token']
         oauth_token_secret = self.session['oauth_token_secret']
-
+        edukia = '--muga\r\n'
+        edukia += 'Content-Disposition: form-data; name="media"; filename="chart.png"\r\n'
+        edukia += '\r\n' + img + '\r\n'
+        edukia += '--muga--'
+        url='https://upload.twitter.com/1.1/media/upload.json'
+        method='POST'
         goiburuak={
-            'Content-Length': str(len('media_data='+urllib.quote(img,''))),
-            'Content-Type': 'multipart/form-data',
-            #'Content-Transfer-Encoding': 'base64',
-            'media': 'media_data'
-
+            'Content-Length': str(len(edukia)),
+            'Content-Type': 'multipart/form-data; boundary=muga',
         }
         oauth_parametroak={'oauth_token':oauth_token}
-        goiburuak['Authorization']= createAuthHeader(method, url, oauth_parametroak, {} , oauth_token_secret)
+        goiburuak['Authorization']= createAuthHeader(method, url, oauth_parametroak, '' , oauth_token_secret)
         http = httplib2.Http()
-        logging.debug(method)
-        response , body = http.request(url,method=method,headers=goiburuak,body='media='+urllib.quote(img,''))
+        response , content = http.request(url,method=method,headers=goiburuak,body=edukia)
 
-        self.response.write(body)
+        argazkia = json.loads(content)
+        argazkia = argazkia["media_id"]
 
+        url='https://api.twitter.com/1.1/statuses/update.json'
+        goiburuak={'status':'EHU-ko temperatura neurgailua '+str(argazkia),
+                   'media_ids':[str(argazkia),]}
+        oauth_parametroak={'oauth_token':oauth_token,}
+        metodoa = 'POST'
+        goiburuak['Authorization']= createAuthHeader(metodoa, url, oauth_parametroak, goiburuak , oauth_token_secret)
+        http = httplib2.Http()
+        response , body = http.request(url+'?status='+urllib.quote(goiburuak['status'])+'&media_ids='+urllib.quote(goiburuak['media_ids'],''),method=metodoa,headers=goiburuak,body=None)
+        self.redirect('/')
 class MainHandler(BaseHandler):
     def get(self):
         f = open('index.html')
