@@ -3,7 +3,7 @@ import httplib
 import urllib
 import webbrowser
 import json, random, time
-#import serial
+import serial
 
 
 ##################################################################################
@@ -41,15 +41,15 @@ def makeRequest(url, method = 'GET', body='', headers={}):
 print('#####################################')
 print('Getting temperature data from Arduino via Serial connection')
 print('#####################################')
-#com_port = serial.Serial('/dev/tty.usbmodem1411', 9600)
+com_port = serial.Serial('/dev/tty.usbmodem1411', 9600)
 
 temperature = 20
 while True:
-    #temperature = float(com_port.readline())
-    t = temperature + 2 - random.random()
+    temperature = float(com_port.readline())
+    '''t = temperature + 2 - random.random()
     while t>40 or t<0:
         t = temperature + 3 - (random.random() * 6)
-    temperature = t
+    temperature = t'''
     print str(temperature)
     response, edukia = makeRequest(url='http://data.sparkfun.com/input/dZaoR0p6pasmppMl5KRd',method='POST',body="temp="+str(temperature),headers={
         'Phant-Private-Key': 'eEwYG2aKawfW55ow8Gp7',

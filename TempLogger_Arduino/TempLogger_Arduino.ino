@@ -69,5 +69,5 @@ void loop() {
   // Send the temperature to the app in the computer
   Serial.println(temperature);
   
-  delay(1000); // Wait 1s between readings to avoid LM35 self-heating
+  delay(5000); // Wait 1s between readings to avoid LM35 self-heating
 }

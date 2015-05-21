@@ -65,8 +65,11 @@ function drawChart() {
           title: 'Time'
         },
         vAxis: {
+            maxValue: 50,
+            minValue: -10,
           title: 'Temp'
         },
+
         backgroundColor: '#f1f8e9'
     };
     graficos.LineChart.chart = new google.visualization.LineChart(document.getElementById('line_chart'));
@@ -95,6 +98,8 @@ function drawChart() {
                   title: 'Time'
                 },
                 vAxis: {
+                    maxValue: 50,
+                    minValue: -10,
                   title: 'Temp'
                 },
                 backgroundColor: '#f1f8e9'
@@ -137,6 +142,8 @@ document.onreadystatechange = function() {
                   title: 'Time'
                 },
                 vAxis: {
+                    maxValue: 50,
+                    minValue: -10,
                   title: 'Temp'
                 },
                 backgroundColor: '#f1f8e9'
